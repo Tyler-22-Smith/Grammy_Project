@@ -1,5 +1,5 @@
 # Ignore All Files
-*
+KEYS.txt
 
 # Files THAT CAN BE UPDATED
 !.gitignore
