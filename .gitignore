@@ -1,6 +1,6 @@
 # Ignore Files
 *.txt
-Grammy_Project/UpdateKeys/*.txt
+/UpdateKeys/*.txt
 
 # Ignoring R Project Cache
 .Rproj.user
