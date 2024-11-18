@@ -1,6 +1,7 @@
 # Ignore Files
 *.txt
 /UpdateKeys/*.txt
+KEYS.txt
 
 # Ignoring R Project Cache
 .Rproj.user
