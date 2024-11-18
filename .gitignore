@@ -1,10 +1,5 @@
-# Ignore All Files
+# Ignore Files
 KEYS.txt
-
-# Files THAT CAN BE UPDATED
-!.gitignore
-!README.md
-!SpotifyData.qmd
 
 # Ignoring R Project Cache
 .Rproj.user
