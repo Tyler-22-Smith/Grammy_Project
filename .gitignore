@@ -1,5 +1,5 @@
 # Ignore Files
-.txt
+*.txt
 
 # Ignoring R Project Cache
 .Rproj.user
