@@ -1,3 +1,3 @@
 variable: value
 client_id: test
-client_secret: why
+client_secret: again
