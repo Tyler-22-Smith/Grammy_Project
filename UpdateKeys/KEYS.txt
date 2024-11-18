@@ -1,1 +1,3 @@
-
+variable: value
+client_id: xxxxx
+client_secret: xxxxx
