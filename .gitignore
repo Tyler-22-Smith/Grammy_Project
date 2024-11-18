@@ -1,5 +1,13 @@
+# Ignore All Files
+*
+
+# Files THAT CAN BE UPDATED
+!.gitignore
+!README.md
+!SpotifyData.qmd
+
+# Ignoring R Project Cache
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
-KEYS.txt
