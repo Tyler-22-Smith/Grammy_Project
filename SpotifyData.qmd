@@ -1,0 +1,102 @@
+---
+title: "SpotifyData"
+author: "Tyler"
+format: "html"
+---
+
+## Package Load
+
+```{r}
+
+if (!require(pacman)) install.packages("pacman")
+pacman::p_load(spotifyr, tidyverse, purr)
+```
+
+## Setup Spotify Environment
+
+```{r}
+# Read in client id and client secret from KEYS.txt file
+keys <- read_delim(file = "KEYS.txt")
+
+# personal identification information
+client_id = keys$value[1]
+client_secret = keys$value[2]
+
+# setting environment
+Sys.setenv(SPOTIFY_CLIENT_ID = client_id)
+Sys.setenv(SPOTIFY_CLIENT_SECRET = client_secret)
+
+# pulling access token
+access_token <- get_spotify_access_token()
+```
+
+## Data Scrapping
+
+```{r}
+grammy_id <- "68tT6cq3UMn1yH7dulfGBP"
+# get to artist name playlist[[34]][[20]][[3]]
+
+audio_feat <- get_playlist_audio_features(
+  playlist_uri = grammy_id) |>
+  select(track.id,
+         track.artists, track.album.name, track.name,
+         danceability, energy, key, loudness, mode, speechiness, 
+         acousticness, instrumentalness, liveness, valence, tempo, 
+         time_signature, track.available_markets, track.explicit, 
+         track.type
+         )
+
+
+```
+
+```{r}
+# Initializing New Data Frame to Extract Artist Info
+audio_feats <- audio_feat
+audio_feats$artist_main <- ""
+audio_feats$artist_number_featured <- 0
+
+# For loop to extract main artist and the number of featured artist
+for (i in 1:nrow(audio_feats)[1]){
+  
+  art <- audio_feat[[2]][[i]]$name
+  main <- art[1]
+  
+  audio_feats$artist_main[i] <- main 
+  audio_feats$artist_number_featured[i] <- length(art) - 1
+}
+
+# Creation of final extracted dataframe with number of avaliable markets and removing dataframe column track
+audio_feats <- audio_feats |>
+  mutate(track.available_markets = 
+           lengths(track.available_markets))|>
+  select(-track.artists)
+```
+
+```{r}
+# 
+max_rows <- nrow(audio_feats)
+count <- 0
+track_feats <- tibble()
+
+for (i in 1:max_rows) {
+  if (count <= max_rows) {
+    track_feat <- get_playlist_tracks(playlist_id = grammy_id, 
+                                      offset = count) |>
+      select(track.id , 
+             track.name, track.popularity, track.album.release_date,
+             track.album.release_date_precision, track.duration_ms, 
+             track.album.total_tracks
+             )
+    count <- count + nrow(track_feat)
+    track_feats <- rbind(track_feats, track_feat)
+  }
+  else{
+    print("Loop Finished")
+  }
+}
+
+grammy_playlist <- left_join(audio_feat, track_feat, 
+                             by = "track.id")
+
+#grammy_playlist$track.artists
+```
