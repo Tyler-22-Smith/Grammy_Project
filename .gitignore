@@ -9,3 +9,5 @@ KEYS.txt
 .RData
 .Ruserdata
 KEYS.txt
+*.txt
+KEYS.txt
