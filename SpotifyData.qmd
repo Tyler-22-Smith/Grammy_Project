@@ -22,8 +22,6 @@ keys <- read_delim(file = "KEYS.txt")
 client_id = keys$value[1]
 client_secret = keys$value[2]
 
-
-
 # setting environment
 Sys.setenv(SPOTIFY_CLIENT_ID = client_id)
 Sys.setenv(SPOTIFY_CLIENT_SECRET = client_secret)
