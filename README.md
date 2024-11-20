@@ -12,6 +12,7 @@
     - if KEYS.txt is pushing open gitbash and run command "git rm --cache KEYS.txt"
 
 **KEYS.txt Settup as followed (use your credentials):**
+
 variable: value
 client_id: xxxxxxx
 client_secret: xxxxxxx
