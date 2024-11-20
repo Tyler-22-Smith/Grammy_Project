@@ -30,15 +30,18 @@ Sys.setenv(SPOTIFY_CLIENT_SECRET = client_secret)
 access_token <- get_spotify_access_token()
 ```
 
-## Data Scrapping
+# Data Scrapping
+
+## 1. Scraping first data set
 
 ```{r}
+# Spotify id for playlist
 grammy_id <- "68tT6cq3UMn1yH7dulfGBP"
-# get to artist name playlist[[34]][[20]][[3]]
 
+# Scraping audio features for grammy_id playlist
 audio_feat <- get_playlist_audio_features(
   playlist_uri = grammy_id) |>
-  select(track.id,
+  select(track.album.id, track.id,
          track.artists, track.album.name, track.name,
          danceability, energy, key, loudness, mode, speechiness, 
          acousticness, instrumentalness, liveness, valence, tempo, 
@@ -49,6 +52,8 @@ audio_feat <- get_playlist_audio_features(
 
 ```
 
+## 2. Cleaning and converting data in first pull to usable format
+
 ```{r}
 # Initializing New Data Frame to Extract Artist Info
 audio_feats <- audio_feat
@@ -58,7 +63,7 @@ audio_feats$artist_number_featured <- 0
 # For loop to extract main artist and the number of featured artist
 for (i in 1:nrow(audio_feats)[1]){
   
-  art <- audio_feat[[2]][[i]]$name
+  art <- audio_feat[[3]][[i]]$name
   main <- art[1]
   
   audio_feats$artist_main[i] <- main 
@@ -72,31 +77,95 @@ audio_feats <- audio_feats |>
   select(-track.artists)
 ```
 
+## 3. Scrapping additional data and writing results to .csv
+
 ```{r}
 # 
 max_rows <- nrow(audio_feats)
-count <- 0
+off <- seq(0, max_rows, by= 99)
 track_feats <- tibble()
 
-for (i in 1:max_rows) {
-  if (count <= max_rows) {
-    track_feat <- get_playlist_tracks(playlist_id = grammy_id, 
-                                      offset = count) |>
+for (i in off){
+  if (i < off[length(off)]) {
+    track_feat <- get_playlist_tracks(playlist_id = grammy_id,
+                                      offset = i) |>
       select(track.id , 
-             track.name, track.popularity, track.album.release_date,
+             track.popularity, track.album.release_date,
              track.album.release_date_precision, track.duration_ms, 
              track.album.total_tracks
              )
-    count <- count + nrow(track_feat)
     track_feats <- rbind(track_feats, track_feat)
   }
   else{
-    print("Loop Finished")
+    track_feat <- get_playlist_tracks(playlist_id = grammy_id,
+                                      offset = i, 
+                                      limit = max_rows - i) |>
+      select(track.id , 
+             track.popularity, track.album.release_date,
+             track.album.release_date_precision, track.duration_ms, 
+             track.album.total_tracks
+             )
+    track_feats <- rbind(track_feats, track_feat)
+    track_feats <- rbind(track_feats, track_feat)
   }
 }
 
-grammy_playlist <- left_join(audio_feat, track_feat, 
-                             by = "track.id")
+# joining data
+grammy <- left_join(audio_feats, track_feats, by = "track.id")
 
-#grammy_playlist$track.artists
+# removing "." from column names and replacing with _
+names(grammy) = gsub(x = names(grammy), pattern = "\\.", "_")
+
+# removing duplicates (matching song ids)
+grammy = grammy[!duplicated(grammy$track_id),]
+
+# Writing Raw Grammy Data to CSV
+write_csv(grammy, "grammy_playlist_raw.csv")
+```
+
+## Test Graphing
+
+```{r}
+grammy <- read_csv("grammy_playlist_raw.csv")
+
+grammy |>
+  group_by(track_album_id) |>
+  summarise(pop_norm = mean(track_popularity) *
+              track_album_total_tracks,
+            dance_norm = mean(danceability) *
+              track_album_total_tracks) |>
+  ggplot(aes(x = pop_norm, y = dance_norm)) +
+  geom_point()
+```
+
+# Making Dataframe Grouped Based on Album ID
+
+```{r}
+grammy_albums <- grammy |>
+  group_by(track_album_id) |>
+  summarise(track_album_id = track_album_id,
+            artist = artist_main,
+            album_featured_artist = sum(artist_number_featured),
+            track_featured_artist = mean(artist_number_featured),
+            album_duration = sum(track_album),
+            danceability_mean = mean(danceability), 
+            energy_mean = mean(energy), 
+            key_mode = mode(key),
+            loudness_mean = mean(loudness), 
+            mode_mean = mode(mode),
+            speechiness_mean = mean(speechiness),
+            acousticness_mean = mean(acousticness),
+            instrumentalness_mean = mean(instrumentalness),
+            liveness_mean = mean(liveness),
+            valence_mean = mean(valence),
+            tempo_mean = mean(tempo),
+            time_signature_mean = mode(time_signature),
+            avaliable_markets = mean(track_available_markets),
+            explicit_tracks = length(which(
+              track_explicit == TRUE)),
+            track_popularity = mean(track_popularity),
+            release_date = release_date,
+            release_date_precision = mode(
+              track_album_release_date_precision)
+            )
 ```
