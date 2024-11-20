@@ -138,16 +138,21 @@ grammy |>
   geom_point()
 ```
 
-# Making Dataframe Grouped Based on Album ID
+# Making Grouped DF Based on Album ID
 
 ```{r}
-grammy_albums <- grammy |>
+# reading in raw csv file
+grammy <- read_csv("grammy_playlist_raw.csv")
+
+# creating new df grouped by album
+grammy_album <- grammy |>
   group_by(track_album_id) |>
   summarise(track_album_id = track_album_id,
             artist = artist_main,
-            album_featured_artist = sum(artist_number_featured),
-            track_featured_artist = mean(artist_number_featured),
-            album_duration = sum(track_album),
+            featured_artist_album = sum(artist_number_featured),
+            featured_artist_track_mean = mean(artist_number_featured),
+            duration_album = sum(track_duration_ms),
+            duration_track_mean = mean(track_duration_ms),
             danceability_mean = mean(danceability), 
             energy_mean = mean(energy), 
             key_mode = mode(key),
@@ -164,8 +169,14 @@ grammy_albums <- grammy |>
             explicit_tracks = length(which(
               track_explicit == TRUE)),
             track_popularity = mean(track_popularity),
-            release_date = release_date,
+            release_date = track_album_release_date,
             release_date_precision = mode(
               track_album_release_date_precision)
             )
+
+# removing duplicates (matching album ids)
+grammy_albums = grammy_album[!duplicated(grammy_album$track_album_id),]
+
+# Writing Raw Grammy Data to CSV
+write_csv(grammy_albums, "grammy_playlist.csv")
 ```
