@@ -1,3 +1,3 @@
 variable: value
-client_id: xxxxxxxxxx
-client_secret: xxxxxxxxx
+client_id: x
+client_secret: x
