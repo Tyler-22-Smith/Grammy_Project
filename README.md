@@ -13,7 +13,9 @@
 
 **KEYS.txt Settup as followed (use your credentials):**
 >variable: value
+
 >client_id: xxxxxxx
+
 >client_secret: xxxxxxx
 
 
