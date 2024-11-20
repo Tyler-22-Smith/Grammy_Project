@@ -1,6 +1,4 @@
 # Ignore Files
-*.txt
-/UpdateKeys/*.txt
 KEYS.txt
 
 # Ignoring R Project Cache
@@ -8,6 +6,3 @@ KEYS.txt
 .Rhistory
 .RData
 .Ruserdata
-KEYS.txt
-*.txt
-KEYS.txt
