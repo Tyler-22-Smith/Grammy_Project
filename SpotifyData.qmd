@@ -9,7 +9,7 @@ format: "html"
 ```{r}
 
 if (!require(pacman)) install.packages("pacman")
-pacman::p_load(spotifyr, tidyverse, purr)
+pacman::p_load(spotifyr, tidyverse, purr, lubridate)
 ```
 
 ## Setup Spotify Environment
@@ -170,7 +170,8 @@ grammy_album <- grammy |>
             explicit_tracks = length(which(
               track_explicit == TRUE)),
             track_popularity = mean(track_popularity),
-            release_date = track_album_release_date,
+            release_date = year(ymd(
+              track_album_release_date)) ,
             release_date_precision = unique(
               track_album_release_date_precision)[which.max(tabulate(match(track_album_release_date_precision, unique(track_album_release_date_precision))))]
             )
