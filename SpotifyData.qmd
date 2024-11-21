@@ -148,6 +148,7 @@ grammy <- read_csv("grammy_playlist_raw.csv")
 grammy_album <- grammy |>
   group_by(track_album_id) |>
   summarise(track_album_id = track_album_id,
+            album_name = track_album_name,
             artist = artist_main,
             featured_artist_album = sum(artist_number_featured),
             featured_artist_track_mean = mean(artist_number_featured),
@@ -155,23 +156,23 @@ grammy_album <- grammy |>
             duration_track_mean = mean(track_duration_ms),
             danceability_mean = mean(danceability), 
             energy_mean = mean(energy), 
-            key_mode = mode(key),
+            key_mode = unique(key)[which.max(tabulate(match(key, unique(key))))],
             loudness_mean = mean(loudness), 
-            mode_mean = mode(mode),
+            mode_mean = unique(mode)[which.max(tabulate(match(mode, unique(mode))))],
             speechiness_mean = mean(speechiness),
             acousticness_mean = mean(acousticness),
             instrumentalness_mean = mean(instrumentalness),
             liveness_mean = mean(liveness),
             valence_mean = mean(valence),
             tempo_mean = mean(tempo),
-            time_signature_mean = mode(time_signature),
+            time_signature_mean = unique(time_signature)[which.max(tabulate(match(time_signature, unique(time_signature))))],
             avaliable_markets = mean(track_available_markets),
             explicit_tracks = length(which(
               track_explicit == TRUE)),
             track_popularity = mean(track_popularity),
             release_date = track_album_release_date,
-            release_date_precision = mode(
-              track_album_release_date_precision)
+            release_date_precision = unique(
+              track_album_release_date_precision)[which.max(tabulate(match(track_album_release_date_precision, unique(track_album_release_date_precision))))]
             )
 
 # removing duplicates (matching album ids)
