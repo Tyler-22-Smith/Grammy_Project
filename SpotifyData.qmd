@@ -7,6 +7,8 @@ format: "html"
 ## Package Load
 
 ```{r}
+#| message: false
+#| warning: false
 
 if (!require(pacman)) install.packages("pacman")
 pacman::p_load(spotifyr, tidyverse, purr, lubridate)
@@ -16,7 +18,7 @@ pacman::p_load(spotifyr, tidyverse, purr, lubridate)
 
 ```{r}
 # Read in client id and client secret from KEYS.txt file
-keys <- read_delim(file = "KEYS.txt")
+keys <- read_delim(file = "C:/Users/Tyler Smith/Documents/Spotify_Rproject/Spotify_Rproject/KEYS.txt")
 
 # personal identification information
 client_id = keys$value[1]
@@ -37,7 +39,7 @@ access_token <- get_spotify_access_token()
 ```{r}
 # Spotify id for playlist
 grammy_id <- "68tT6cq3UMn1yH7dulfGBP"
-
+get_album("6QaVfG1pHYl1z15ZxkvVDW")
 # Scraping audio features for grammy_id playlist
 audio_feat <- get_playlist_audio_features(
   playlist_uri = grammy_id) |>
@@ -181,4 +183,38 @@ grammy_albums = grammy_album[!duplicated(grammy_album$track_album_id),]
 
 # Writing Raw Grammy Data to CSV
 write_csv(grammy_albums, "grammy_playlist.csv")
+```
+
+```{r}
+data <- read_csv("updated_grammy_nominations.csv") |>
+  mutate(track_album_release_date = 
+           as.Date(track_album_release_date),
+         track_year = as.Date(track_album_release_date, "%Y"))
+
+
+writeClipboard(colnames(data))
+print(colnames(data))
+data |>
+  filter(!is.na(track_year)) |>
+  group_by(track_album_id) |>
+  summarise(year = track_year, popularity = mean(track_popularity),
+            award = award_status)|>
+  ggplot(aes(x = year, y = popularity, 
+             color = award))+
+  geom_point()
+
+data |>
+  filter(!is.na(track_year)) |>
+  ggplot(aes(x = track_year, y = track_popularity, 
+             color = award_status))+
+  geom_point()
+```
+
+```{r}
+id <- "7maFg6K2Vt6QBzzQEHKpWU"
+
+audio_feat <- get_playlist_audio_features(
+  playlist_uri = id)
+
+
 ```
