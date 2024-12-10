@@ -57,7 +57,7 @@ print(f'Number of columns: {df_balanced.shape[1]}')
 print(df_balanced.head(5))
 print(df_balanced.columns)
 # write dataframe to csv
-df_balanced.to_csv(os.path.join("Balanced_Data.csv"), encoding='utf-8', index=False)
+##df_balanced.to_csv(os.path.join("Balanced_Data.csv"), encoding='utf-8', index=False)
 
 # Reading Ballanced DF
 df = read_csv(os.path.join(base_dir,"Balanced_Data.csv"))
@@ -120,6 +120,3 @@ for i in range (len(test_labels)):
 
 print(correct_samples/len(test_labels))
 
-
-
-# T-testing
