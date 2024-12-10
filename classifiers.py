@@ -1,3 +1,4 @@
+import os
 from sklearn import svm
 from sklearn.metrics import accuracy_score, log_loss
 from sklearn.neighbors import KNeighborsClassifier
@@ -14,8 +15,11 @@ from sklearn.feature_selection import VarianceThreshold
 from sklearn.feature_selection import SelectKBest, chi2, f_classif
 from scipy.stats import pearsonr
 
+# User Specified Base Directory
+base_dir = r'C:\Users\Tyler Smith\Documents\GitHub\Grammy_Project'
+
 # read in data
-df_raw=pd.read_csv(r'C:\Users\Tyler Smith\Documents\GitHub\Grammy_Project\updated_grammy_nominations.csv')
+df_raw=pd.read_csv(os.path.join(base_dir,"updated_grammy_nominations.csv"))
 
 # remove identifying columns
 col_names_remove = ["track_album_id", "track_id", "track_album_name", "track_name", "track_album_release_date", 'artist_main', 'track_type']
@@ -46,14 +50,19 @@ try:
 finally:
     print("Balancing Complete!")
 
+# Visualize df dimensions 
 df_balanced = pd.concat([df_winner, df_nominated])
 print(f'Number of rows: {df_balanced.shape[0]}')
 print(f'Number of columns: {df_balanced.shape[1]}')
 print(df_balanced.head(5))
 print(df_balanced.columns)
+# write dataframe to csv
+df_balanced.to_csv(os.path.join("Balanced_Data.csv"), encoding='utf-8', index=False)
 
+# Reading Ballanced DF
+df = read_csv(os.path.join(base_dir,"Balanced_Data.csv"))
 # shuffle the dataset to make sure that the training and test samples are selected randomly, and not according to some order in the file.
-df = shuffle(df_balanced)
+df = shuffle(df)
 
 # separating to training and test samples. First 300 rows are used for testing, and the rest for training. The number of training and test samples need to be adjusted to the size of the dataset.
 test=df.iloc[:330,:]
@@ -113,20 +122,4 @@ print(correct_samples/len(test_labels))
 
 
 
-
-
-
-for clf in classifiers:
-    clf.fit(train_samples, train_labels)
-    res=clf.predict(test_samples)
-    acc = accuracy_score(test_labels, res)
-    
-    correct_samples = 0
-    for i in range(len(test_labels)):
-        if test_labels[i]==res[i]:
-            correct_samples=correct_samples+1
-    percent_correct = correct_samples/len(test_labels)
-    print(percent_correct)
-    r=pearsonr(percent_correct, 0.5)    
-
-    print("{0}: \n - Accuracy: {1} \n Mean Absolute Error: {2} \n Pearsons r: {3}".format(clf.__class__.__name__, str(round(acc, 2)), str(round(percent_correct, 2)), str(r)))
+# T-testing
