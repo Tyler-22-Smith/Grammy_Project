@@ -218,3 +218,37 @@ audio_feat <- get_playlist_audio_features(
 
 
 ```
+
+# Classifier Results
+
+```{r}
+class <- c("Zero r", "k-Neighbors", "Decision Tree", "Random Forest", "ADA Boosting", "Gradient Boosting", "NB Gaussian", "LDA", "QDA")
+
+acc <- c(0.4727272727272727, 0.5303030303030303, 0.6696969696969697, 0.7666666666666667, 0.6727272727272727, 0.7848484848484848, 0.6424242424242425, 0.6787878787878788, 0.5696969696969697)*100
+
+fill_color <- c("")
+
+class_res <- tibble("Classifier"= class, "Classification Accuracy"=acc)
+
+highlight_colors <- c("Zero r" = "#FF6347", 
+                      "Gradient Boosting" = "#32CD32", 
+                      "Other" = "#4682B4")
+
+# Create the plot
+p <- class_res |> 
+  ggplot(aes(x = Classifier, y = `Classification Accuracy`, fill = ifelse(Classifier == "Zero r", "Zero r", 
+                                                                        ifelse(Classifier == "Gradient Boosting", "Gradient Boosting", "Other")))) + 
+  geom_col() +
+  scale_fill_manual(values = highlight_colors) +  # Apply the custom color scheme
+  ylim(0, 100) +  # Set y-axis limits
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels
+        legend.position = "none") +  # Remove legend
+  labs(title = "Classifier Accuracy", 
+       x = "Classifier", 
+       y = "Classification Accuracy (%)")
+
+# Save plot to png
+ggsave("Figures/classif_acc_plot.png", plot = p, width = 10, height = 6, dpi = 300)
+
+
+```
