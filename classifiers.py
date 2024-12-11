@@ -1,4 +1,6 @@
 import os
+import numpy as np
+from datetime import datetime
 from sklearn import svm
 from sklearn.metrics import accuracy_score, log_loss
 from sklearn.neighbors import KNeighborsClassifier
@@ -15,58 +17,68 @@ from sklearn.feature_selection import VarianceThreshold
 from sklearn.feature_selection import SelectKBest, chi2, f_classif
 from scipy.stats import pearsonr
 
+###### Cleaning Data
+
 # User Specified Base Directory
 base_dir = r'C:\Users\Tyler Smith\Documents\GitHub\Grammy_Project'
 
-# read in data
-df_raw=pd.read_csv(os.path.join(base_dir,"updated_grammy_nominations.csv"))
+def sample_grammy_data(df_raw, output_path=base_dir, album_id_col='track_album_id', status_col='award_status', album_name_col='track_album_name'):
+  
+   timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+   
+   winner_albums = df_raw[df_raw[status_col] == 'winner'][album_id_col].unique()
+   nominee_albums = df_raw[df_raw[status_col] == 'nominee'][album_id_col].unique()
+   
+   n_winner_albums = len(winner_albums)
+   n_nominee_albums = len(nominee_albums)
+   
+   np.random.seed(42)  # for reproducibility
+   sampled_nominee_albums = np.random.choice(
+       nominee_albums, 
+       size=n_winner_albums, 
+       replace=False
+   )
+   
+   selected_albums = np.concatenate([winner_albums, sampled_nominee_albums])
+   mask = df_raw[album_id_col].isin(selected_albums)
+   
+   df_balanced = df_raw[mask].copy()
+   
+   data_filename = os.path.join(base_dir, "Balanced_Grammy_Data.csv")
+   
+   df_balanced.to_csv(data_filename, index=False)
+   
+   return df_balanced
+if __name__ == "__main__":
+    df_raw = pd.read_csv(os.path.join(base_dir, "updated_grammy_nominations.csv"))
+    df_balanced = sample_grammy_data(df_raw)
 
 # remove identifying columns
 col_names_remove = ["track_album_id", "track_id", "track_album_name", "track_name", "track_album_release_date", 'artist_main', 'track_type']
-
-
+df_balanced = pd.read_csv(os.path.join(base_dir, "Balanced_Grammy_Data.csv"))
 # droping the identified columns from the dataframe
-df = df_raw.drop(col_names_remove, axis=1)
-df['track_explicit'] = df['track_explicit'].astype(int)
-df['track_album_release_date_precision'] = df['track_album_release_date_precision'].replace({'day': 0, 'year': 1})
-df['track_album_release_date_precision'] = df['track_album_release_date_precision'].astype(int)
-print(df.columns)
-
-# balancing dataframe
-count_winner = df[df['award_status'] == 'winner'].shape[0]
-count_nominated = df[df['award_status'] == 'nominee'].shape[0]
-min_count = min(count_winner, count_nominated)
-try:
-    if count_winner > count_nominated:
-        df_winner = df[df['award_status'] == 'winner'].sample(min_count, random_state=42)  # random_state for reproducibility
-        df_nominated = df[df['award_status'] == 'nominee']
-    elif count_nominated > count_winner:
-        df_nominated = df[df['award_status'] == 'nominee'].sample(min_count, random_state=42)
-        df_winner = df[df['award_status'] == 'winner']
-    else:
-        # Already balanced
-        df_winner = df[df['award_status'] == 'winner']
-        df_nominated = df[df['award_status'] == 'nominee']
-finally:
-    print("Balancing Complete!")
-
-# Visualize df dimensions 
-df_balanced = pd.concat([df_winner, df_nominated])
-print(f'Number of rows: {df_balanced.shape[0]}')
-print(f'Number of columns: {df_balanced.shape[1]}')
-print(df_balanced.head(5))
+df_balanced = df_balanced.drop(col_names_remove, axis=1)
+df_balanced['track_explicit'] = df_balanced['track_explicit'].astype(int)
+df_balanced['track_album_release_date_precision'] = df_balanced['track_album_release_date_precision'].replace({'day': 0, 'year': 1})
+df_balanced['track_album_release_date_precision'] = df_balanced['track_album_release_date_precision'].astype(int)
 print(df_balanced.columns)
-# write dataframe to csv
-##df_balanced.to_csv(os.path.join("Balanced_Data.csv"), encoding='utf-8', index=False)
+
+# Write Final Data Frame to CSV
+df_balanced.to_csv(os.path.join(base_dir, "Final_Balanced_Data.csv"), index=False)
+
+
+
+##### Classifiers
 
 # Reading Ballanced DF
-df = read_csv(os.path.join(base_dir,"Balanced_Data.csv"))
+df = read_csv(os.path.join(base_dir,"Final_Balanced_Data.csv"))
+print(df.head(5))
 # shuffle the dataset to make sure that the training and test samples are selected randomly, and not according to some order in the file.
 df = shuffle(df)
 
 # separating to training and test samples. First 300 rows are used for testing, and the rest for training. The number of training and test samples need to be adjusted to the size of the dataset.
-test=df.iloc[:330,:]
-train=df.iloc[330:,:]
+test=df.iloc[:342,:]
+train=df.iloc[342:,:]
 # scikit needs two separate lists - one for the features, and another for the labels. The code below separates the file into two lists. The labels are taken from the column titled "Class". That title can be different in different datasets.
 train_labels=train['award_status'].tolist()
 train=train.drop(['award_status'],axis=1)
@@ -119,4 +131,5 @@ for i in range (len(test_labels)):
         correct_samples=correct_samples+1
 
 print(correct_samples/len(test_labels))
+
 
