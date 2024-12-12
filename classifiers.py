@@ -20,7 +20,7 @@ from scipy.stats import pearsonr
 ###### Cleaning Data
 
 # User Specified Base Directory
-base_dir = r'C:\Users\Tyler Smith\Documents\GitHub\Grammy_Project'
+base_dir = r'.'
 
 def sample_grammy_data(df_raw, output_path=base_dir, album_id_col='track_album_id', status_col='award_status', album_name_col='track_album_name'):
   
@@ -50,11 +50,11 @@ def sample_grammy_data(df_raw, output_path=base_dir, album_id_col='track_album_i
    
    return df_balanced
 if __name__ == "__main__":
-    df_raw = pd.read_csv(os.path.join(base_dir, "updated_grammy_nominations.csv"))
+    df_raw = pd.read_csv(os.path.join(base_dir, "grammy_raw_data.csv"))
     df_balanced = sample_grammy_data(df_raw)
 
 # remove identifying columns
-col_names_remove = ["track_album_id", "track_id", "track_album_name", "track_name", "track_album_release_date", 'artist_main', 'track_type']
+col_names_remove = ["track_album_id", "track_id", "track_album_name", "track_name", "track_album_release_date", 'artist_main', 'track_type', 'track_album_total_tracks']
 df_balanced = pd.read_csv(os.path.join(base_dir, "Balanced_Grammy_Data.csv"))
 # droping the identified columns from the dataframe
 df_balanced = df_balanced.drop(col_names_remove, axis=1)
